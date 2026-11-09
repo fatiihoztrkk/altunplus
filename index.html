@@ -126,7 +126,8 @@ section{position:relative}
 .scrollcue i{width:1px;height:44px;background:var(--line-light);position:relative;overflow:hidden}
 .scrollcue i::after{content:"";position:absolute;left:0;top:-50%;width:1px;height:50%;background:var(--gold);animation:drip 2s var(--ease) infinite}
 @keyframes drip{to{top:110%}}
-@media (max-width:700px){.hero__side{display:none}.hero__grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:1100px){.hero__side{display:none}}
+@media (max-width:700px){.hero__grid{grid-template-columns:repeat(2,1fr)}}
 
 /* ---------- intro ---------- */
 .intro{padding-block:clamp(90px,14vw,200px)}
