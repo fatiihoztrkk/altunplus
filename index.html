@@ -324,6 +324,12 @@ section{position:relative}
 .cinfo dd{font-size:18px}
 .cinfo dd a{border-bottom:1px solid var(--line-light);transition:border-color .3s}
 .cinfo dd a:hover{border-color:var(--gold)}
+.cinfo dd a.ig{display:inline-flex;align-items:center;gap:14px;border:0}
+.ig__ic{width:46px;height:46px;border-radius:50%;border:1px solid var(--line-light);display:grid;place-items:center;transition:background .35s,color .35s,border-color .35s,transform .5s var(--ease)}
+.ig__ic svg{width:20px;height:20px}
+.ig__t{border-bottom:1px solid var(--line-light);transition:border-color .3s}
+.cinfo dd a.ig:hover .ig__ic{background:var(--gold);border-color:var(--gold);color:var(--ink);transform:rotate(-8deg) scale(1.06)}
+.cinfo dd a.ig:hover .ig__t{border-color:var(--gold)}
 form{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px}
 .f{position:relative;padding-top:18px}
 .f.full{grid-column:1/-1}
@@ -634,7 +640,7 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px}
         <dl>
           <div><dt>Adres</dt><dd>Yeşilköy Mah. Halkalı Cad.<br>Latif Apt. No:1/2<br>Bakırköy / İstanbul</dd></div>
           <div><dt>E-posta</dt><dd><a href="mailto:info@altunplus.com">info@altunplus.com</a></dd></div>
-          <div><dt>Sosyal</dt><dd><a href="https://www.instagram.com/altunplusyapi/" target="_blank" rel="noopener">@altunplusyapi</a></dd></div>
+          <div><dt>Sosyal</dt><dd><a class="ig" href="https://www.instagram.com/altunplusyapi/" target="_blank" rel="noopener" aria-label="Instagram: @altunplusyapi"><span class="ig__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg></span><span class="ig__t">@altunplusyapi</span></a></dd></div>
         </dl>
       </div>
       <form id="form" novalidate>
