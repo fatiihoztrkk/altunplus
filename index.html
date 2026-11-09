@@ -683,15 +683,15 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (() => {
-const W = (id, ext, w, h) => `https://static.wixstatic.com/media/565e20_${id}~mv2.${ext}/v1/fill/w_${w},h_${h},al_c,q_85/a.${ext}`;
-const RAW = (id, ext) => `https://static.wixstatic.com/media/565e20_${id}~mv2.${ext}`;
+const W = (id, ext, w, h) => id.includes('/') ? id : `https://static.wixstatic.com/media/565e20_${id}~mv2.${ext}/v1/fill/w_${w},h_${h},al_c,q_85/a.${ext}`;
+const RAW = (id, ext) => id.includes('/') ? id : `https://static.wixstatic.com/media/565e20_${id}~mv2.${ext}`;
 document.getElementById('yr').textContent = new Date().getFullYear();
 
 /* ---------------- DATA ---------------- */
-const G = str => str.trim().split(/\s+/).map(x=>x.split('.'));
+const G = str => str.trim().split(/\s+/).map(x => x.includes('/') ? [x, ''] : x.split('.'));
 const projects = [
-  {t:'Kadıköy Çam Palas', loc:'Kadıköy', yr:'Devam Ediyor', st:'devam', img:['06157585e5444937ae7a822b75110e4d','jpg'], ll:[40.9745,29.0505], type:'Karma Proje · Konut + Ticari', area:'12.000 m²', units:'2 Blok', extra:['Durum','Ruhsat süreci devam ediyor'],
-    gallery:G('06157585e5444937ae7a822b75110e4d.jpg 3c07fff8a52a415ea62d8b1dc347bd4c.jpg e5aa07c1f3644f7687ece9ea9db7e98b.jpg bfa1d10c7ed84444b374a47f7bf041cc.jpg'),
+  {t:'Kadıköy Çam Palas', loc:'Kadıköy', yr:'Devam Ediyor', st:'devam', img:['assets/cam-palas-1.jpg',''], ll:[40.9745,29.0505], type:'Karma Proje · Konut + Ticari', area:'12.000 m²', units:'2 Blok', extra:['Durum','Ruhsat süreci devam ediyor'],
+    gallery:G('assets/cam-palas-1.jpg assets/cam-palas-2.jpg assets/cam-palas-3.jpg 06157585e5444937ae7a822b75110e4d.jpg 3c07fff8a52a415ea62d8b1dc347bd4c.jpg e5aa07c1f3644f7687ece9ea9db7e98b.jpg bfa1d10c7ed84444b374a47f7bf041cc.jpg'),
     desc:['Kadıköy’ün değerli lokasyonlarından birinde konumlanan projemiz, ruhsat süreci devam eden nitelikli bir karma kullanım projesi olarak planlanmıştır. Toplam 12.000 m² inşaat alanına sahip proje, ticari alanlar ve konut birimlerini bir arada sunacak şekilde tasarlanmıştır.','Modern mimari anlayışı ile hayata geçirilmesi planlanan 2 blok yer almakta olup, kullanıcı konforunu artırmak amacıyla kapalı otopark alanı da projeye dahil edilmiştir. Ruhsat sürecinin tamamlanmasının ardından proje detayları paylaşılacaktır.']},
   {t:'Beykoz Villa', loc:'Beykoz', yr:'Devam Ediyor', st:'devam', img:['9d9c3561a39b484d945da3d00bace005','jpg'], ll:[41.1330,29.0960], type:'Müstakil Villa', area:'2.800 m²', units:'2 Villa · 6+1', extra:['Özellik','Özel yüzme havuzu'],
     gallery:G('9d9c3561a39b484d945da3d00bace005.jpg 8f21a160f3b24fb6a25fb08db1749b9c.jpg 5a0a224f1e0a44f7ad3d378c03e6eb70.jpg c37c04aa75f34a1ebef936d44b8d9075.jpg 2b71a6068b4a44d8a1e2afdbcd20bf67.jpg 738686b369f74c31ae2bdf0a8c9fa35d.jpg 3db567726d1f46e892a120825cf3644f.jpg 7987d24965af401cbe29a65e09de60d8.jpg ffad059b91a4452dbb76abf85327ba9c.jpg 7139e3e7077e443c9e103283ed75c4d9.jpg 679ac50d033044deb1342803c186d486.jpg'),
@@ -777,7 +777,7 @@ grid.addEventListener('click', e => { const c = e.target.closest('.pj'); if(c) o
 grid.addEventListener('keydown', e => { if(e.key==='Enter'){ const c = e.target.closest('.pj'); if(c) openP(+c.dataset.i);} });
 document.getElementById('mClose').onclick = closeP;
 addEventListener('keydown', e => { if(e.key==='Escape') closeP(); });
-const BIG = (g) => `https://static.wixstatic.com/media/565e20_${g[0]}~mv2.${g[1]}/v1/fit/w_2000,h_1500,al_c,q_85/a.${g[1]}`;
+const BIG = (g) => g[0].includes('/') ? g[0] : `https://static.wixstatic.com/media/565e20_${g[0]}~mv2.${g[1]}/v1/fit/w_2000,h_1500,al_c,q_85/a.${g[1]}`;
 function show(k, instant){
   gi = (k + gal.length) % gal.length; const g = gal[gi], src = BIG(g);
   document.getElementById('mCount').textContent = `${String(gi+1).padStart(2,'0')} / ${String(gal.length).padStart(2,'0')}`;
