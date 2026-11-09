@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Altun Plus İnşaat</title>
+<meta name="robots" content="noindex">
+<style>body{margin:0;background:#0f0f0e;color:#f6f4ef;font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}a{color:#b8935a}</style>
+<script>
+// Eski Wix adreslerini yeni sayfadaki ilgili bölüme yönlendirir.
+(function () {
+  var p = decodeURIComponent(location.pathname).toLocaleLowerCase('tr').normalize('NFC').replace(/̇/g, '');
+  var base = location.pathname.split('/').length > 2 && location.hostname.endsWith('github.io')
+    ? '/' + location.pathname.split('/')[1] + '/' : '/';
+  var hash = '';
+  if (p.indexOf('kurumsal') > -1) hash = '#kurumsal';
+  else if (p.indexOf('harita') > -1) hash = '#harita';
+  else if (p.indexOf('iletisim') > -1 || p.indexOf('iletişim') > -1) hash = '#iletisim';
+  else if (p.indexOf('proje') > -1 || /kad[ıi]k[öo]y|silivri|g[üu]ng[öo]ren|g[öo]ztepe|ba[şs]ak[şs]ehir|beykoz/.test(p)) hash = '#projeler';
+  location.replace(base + hash);
+})();
+</script>
+</head>
+<body><p>Yönlendiriliyorsunuz… <a href="/">Ana sayfa</a></p></body>
+</html>
