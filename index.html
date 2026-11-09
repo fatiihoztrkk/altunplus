@@ -218,12 +218,22 @@ section{position:relative}
 /* ---------- modal ---------- */
 .modal{position:fixed;inset:0;z-index:150;display:grid;grid-template-columns:1.2fr 1fr;background:var(--paper);clip-path:inset(100% 0 0 0);transition:clip-path .9s var(--ease);visibility:hidden}
 .modal.open{clip-path:inset(0);visibility:visible}
-.modal__media{position:relative;overflow:hidden;background:var(--ink)}
-.modal__media img{width:100%;height:100%;object-fit:cover}
-.modal__thumbs{position:absolute;left:24px;bottom:24px;display:flex;gap:8px}
-.modal__thumbs button{width:64px;height:48px;overflow:hidden;opacity:.55;transition:opacity .3s;border:1px solid rgba(255,255,255,.6)}
-.modal__thumbs button.on{opacity:1}
+.modal__media{position:relative;overflow:hidden;background:var(--ink);display:flex;flex-direction:column;min-height:0}
+.modal__stage{position:relative;flex:1;min-height:0;overflow:hidden}
+.modal__stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transition:opacity .45s}
+.modal__stage img.bg{object-fit:cover;filter:blur(30px) brightness(.45);transform:scale(1.15)}
+.modal__stage img.fade{opacity:0}
+.gnav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;background:rgba(15,15,14,.55);color:var(--paper);border:1px solid rgba(246,244,239,.3);display:grid;place-items:center;z-index:2;transition:background .3s,color .3s}
+.gnav:hover{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.gnav.prev{left:18px}.gnav.next{right:18px}
+.gnav svg{width:18px;height:18px}
+.gcount{position:absolute;top:18px;left:18px;z-index:2;color:var(--paper);font-size:12px;letter-spacing:.2em;background:rgba(15,15,14,.55);padding:7px 12px;border-radius:100px;font-variant-numeric:tabular-nums}
+.modal__thumbs{display:flex;gap:6px;padding:10px;overflow-x:auto;background:var(--ink);scrollbar-width:thin;flex:none}
+.modal__thumbs button{flex:none;width:76px;height:54px;overflow:hidden;opacity:.45;transition:opacity .3s;outline:1px solid transparent;outline-offset:-1px}
+.modal__thumbs button:hover{opacity:.8}
+.modal__thumbs button.on{opacity:1;outline-color:var(--gold)}
 .modal__thumbs img{width:100%;height:100%;object-fit:cover}
+.modal__media.single .gnav,.modal__media.single .gcount,.modal__media.single .modal__thumbs{display:none}
 .modal__body{padding:clamp(28px,5vw,80px);overflow:auto;display:flex;flex-direction:column}
 .modal__close{align-self:flex-end;display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
 .modal__close i{width:44px;height:44px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;transition:transform .5s var(--ease),background .3s}
@@ -235,7 +245,7 @@ section{position:relative}
 .modal__specs b{font-weight:500;font-size:17px}
 .modal__desc{color:var(--muted);max-width:52ch}
 .modal__desc p+p{margin-top:12px}
-@media (max-width:900px){.modal{grid-template-columns:1fr;grid-template-rows:45vh 1fr}}
+@media (max-width:900px){.modal{grid-template-columns:1fr;grid-template-rows:52vh 1fr}.gnav{width:42px;height:42px}.modal__thumbs button{width:60px;height:44px}}
 
 /* ---------- values ---------- */
 .values{background:var(--stone);padding-block:clamp(90px,12vw,170px)}
@@ -515,7 +525,15 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px}
 
 <!-- PROJECT MODAL -->
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-  <div class="modal__media"><img id="mImg" alt=""><div class="modal__thumbs" id="mThumbs"></div></div>
+  <div class="modal__media" id="mMedia">
+    <div class="modal__stage" id="mStage">
+      <img class="bg" id="mBg" alt="" aria-hidden="true"><img id="mImg" alt="">
+      <span class="gcount" id="mCount"></span>
+      <button class="gnav prev" id="mPrev" aria-label="Önceki görsel"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3L5 8l5 5"/></svg></button>
+      <button class="gnav next" id="mNext" aria-label="Sonraki görsel"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3l5 5-5 5"/></svg></button>
+    </div>
+    <div class="modal__thumbs" id="mThumbs"></div>
+  </div>
   <div class="modal__body">
     <button class="modal__close" id="mClose">Kapat <i><svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="1.5"><path d="M1 1l12 12M13 1L1 13"/></svg></i></button>
     <span class="eyebrow gold" id="mEyebrow"></span>
@@ -661,20 +679,41 @@ const RAW = (id, ext) => `https://static.wixstatic.com/media/565e20_${id}~mv2.${
 document.getElementById('yr').textContent = new Date().getFullYear();
 
 /* ---------------- DATA ---------------- */
+const G = str => str.trim().split(/\s+/).map(x=>x.split('.'));
 const projects = [
-  {t:'Kadıköy Çam Palas', loc:'Kadıköy', yr:'Devam Ediyor', st:'devam', img:['06157585e5444937ae7a822b75110e4d','jpg'], ll:[40.9745,29.0505], type:'Kentsel Dönüşüm · Konut'},
-  {t:'Beykoz Villa', loc:'Beykoz', yr:'Devam Ediyor', st:'devam', img:['9d9c3561a39b484d945da3d00bace005','jpg'], ll:[41.1330,29.0960], type:'Villa'},
-  {t:'Silivri Villa', loc:'Silivri', yr:'Devam Ediyor', st:'devam', img:['4dca0b8a865845a58681a5631dd4ddba','jpg'], ll:[41.0800,28.2350], type:'Villa'},
-  {t:'Er Apartmanı', loc:'Kadıköy · Bostancı', yr:'2024', st:'tamam', img:['df073d5af329440f89d46ffd950c8394','jpg'], ll:[40.9585,29.0960], type:'Kentsel Dönüşüm · Konut', area:'4.500 m²', units:'3+1 Daireler',
-    gallery:[['df073d5af329440f89d46ffd950c8394','jpg'],['796ab743611249148c0c975dab0aaa32','jpeg'],['8ee7978572414fa087498f802f9e1a3b','png'],['eec2176c730b407aa18491a90ded57e9','png'],['3c36711086a44212a55a94b00b398f76','png']],
-    desc:['2024 yılında hayata geçirilen bu özel kentsel dönüşüm projesi, Kadıköy Bostancı’nın merkezinde çağdaş mimariyle yükseliyor. Toplam 4.500 m² inşaat alanına sahip proje, ferah planlanmış 3+1 daireleri ile konforlu ve fonksiyonel bir yaşam sunuyor.','Kapalı otopark ayrıcalığı, kaliteli malzeme seçimi, modern detaylar ve akıllı yaşam çözümleriyle kentsel dönüşümün sunduğu tüm avantajları bir arada buluşturuyor.']},
-  {t:'Kadıköy', loc:'Kadıköy', yr:'2023', st:'tamam', img:['27a27d57dc6b4ed5b4231d29f731a6e2','jpg'], ll:[40.9700,29.0640], type:'Kentsel Dönüşüm · Konut'},
-  {t:'Silivri', loc:'Silivri', yr:'2023', st:'tamam', img:['7363b9e9dee245a1a419e95277cb1a1b','jpg'], ll:[41.0735,28.2470], type:'Konut'},
-  {t:'Şen Apartmanı', loc:'Kadıköy', yr:'2021', st:'tamam', img:['6b951f5404f14838b3681e5a516d13b8','jpg'], ll:[40.9810,29.0560], type:'Kentsel Dönüşüm · Konut'},
-  {t:'Güngören', loc:'Güngören', yr:'2020', st:'tamam', img:['350341e6b6f441ccb3f3009e225de72d','jpg'], ll:[41.0225,28.8735], type:'Konut'},
-  {t:'Altun Evler', loc:'Göztepe', yr:'2016', st:'tamam', img:['5064d3c5675c4d94b204627be4cd989c','jpg'], ll:[40.9775,29.0610], type:'Konut'},
-  {t:'Başakşehir', loc:'Başakşehir', yr:'2007', st:'tamam', img:['38e5cb8649be44b78d558178603b7441','png'], ll:[41.0935,28.8020], type:'Konut'},
-  {t:'Güngören', loc:'Güngören', yr:'2004 / 2014', st:'tamam', img:['5439bf6e460048f6a73c6255a27ecb8c','jpg'], ll:[41.0175,28.8810], type:'Konut'},
+  {t:'Kadıköy Çam Palas', loc:'Kadıköy', yr:'Devam Ediyor', st:'devam', img:['06157585e5444937ae7a822b75110e4d','jpg'], ll:[40.9745,29.0505], type:'Karma Proje · Konut + Ticari', area:'12.000 m²', units:'2 Blok', extra:['Durum','Ruhsat süreci devam ediyor'],
+    gallery:G('06157585e5444937ae7a822b75110e4d.jpg 3c07fff8a52a415ea62d8b1dc347bd4c.jpg e5aa07c1f3644f7687ece9ea9db7e98b.jpg bfa1d10c7ed84444b374a47f7bf041cc.jpg'),
+    desc:['Kadıköy’ün değerli lokasyonlarından birinde konumlanan projemiz, ruhsat süreci devam eden nitelikli bir karma kullanım projesi olarak planlanmıştır. Toplam 12.000 m² inşaat alanına sahip proje, ticari alanlar ve konut birimlerini bir arada sunacak şekilde tasarlanmıştır.','Modern mimari anlayışı ile hayata geçirilmesi planlanan 2 blok yer almakta olup, kullanıcı konforunu artırmak amacıyla kapalı otopark alanı da projeye dahil edilmiştir. Ruhsat sürecinin tamamlanmasının ardından proje detayları paylaşılacaktır.']},
+  {t:'Beykoz Villa', loc:'Beykoz', yr:'Devam Ediyor', st:'devam', img:['9d9c3561a39b484d945da3d00bace005','jpg'], ll:[41.1330,29.0960], type:'Müstakil Villa', area:'2.800 m²', units:'2 Villa · 6+1', extra:['Özellik','Özel yüzme havuzu'],
+    gallery:G('9d9c3561a39b484d945da3d00bace005.jpg 8f21a160f3b24fb6a25fb08db1749b9c.jpg 5a0a224f1e0a44f7ad3d378c03e6eb70.jpg c37c04aa75f34a1ebef936d44b8d9075.jpg 2b71a6068b4a44d8a1e2afdbcd20bf67.jpg 738686b369f74c31ae2bdf0a8c9fa35d.jpg 3db567726d1f46e892a120825cf3644f.jpg 7987d24965af401cbe29a65e09de60d8.jpg ffad059b91a4452dbb76abf85327ba9c.jpg 7139e3e7077e443c9e103283ed75c4d9.jpg 679ac50d033044deb1342803c186d486.jpg'),
+    desc:['Beykoz’un doğal dokusu ve sakin yaşam anlayışıyla öne çıkan bölgesinde konumlanan projemiz, yapım süreci devam eden özel bir villa projesidir. Toplam 2.800 m² inşaat alanına sahip proje, geniş ve konforlu yaşam alanları sunan 6+1 tipinde 2 adet müstakil villadan oluşmaktadır.','Modern mimari çizgilerle tasarlanan villalar, özel yüzme havuzları ile ayrıcalıklı bir yaşam deneyimi sunmaktadır. Doğa ile iç içe, mahremiyet odaklı bu proje; hem oturum hem de yatırım açısından Beykoz’un değerli lokasyonlarından birinde yer almaktadır.']},
+  {t:'Silivri Villa', loc:'Silivri', yr:'Devam Ediyor', st:'devam', img:['4dca0b8a865845a58681a5631dd4ddba','jpg'], ll:[41.0800,28.2350], type:'Villa', area:'3.800 m²', units:'9 Villa · 8+2', extra:['Durum','Ruhsat süreci devam ediyor'],
+    gallery:G('4dca0b8a865845a58681a5631dd4ddba.jpg 9c337c09cb034e35bd1cbf78d79533e1.jpg 6019816a540d472ba65f411e0e50f9f4.jpg 2df53267e27745fab2a5ec758a2356f4.jpg 6ad807c6fe004ff6be8bd40939149592.jpg f70ee0e43818497eb5d946282f1d64da.jpg 09818facb027400bb0c530827fe2b6a4.jpg e8c26e3b7f8f4c00a34bc9cb779a9fc8.jpg 63e9ff729c5849bd883628e7a5ee4731.jpg 05ac60a8fb4d48d6ac8d546511f74ebb.jpg bdc251c501de4effae2dcbabba416f93.jpg fb814a7d1c2d4ed8a6a81c85a7afcf70.jpg b5b3df1542da47cc9561326b8d94b950.jpg 3ef03c1565254160a79ff611d4d55e20.png 6dfd2d81c6b3481c99dc5811aa68dcda.png e7033102207d4f318ebd4bb1b591aa28.png 74dbe9304a0f4b13b900de4d93215ca2.png e009981695b64eb1a7851ef4742298e1.png 0d0548e772434339ab0c71c1e7647a52.png a3e2fe1ed84f4a0fa4ea386a7ad1c245.jpg 8cdca2d737214595860eaa44a2e53ae7.png 0405521f01cd4ca6869bacb1f49e952b.png 4e130f34867e4f51a0556f74e668e41f.png 8f6794ad74164f64bba040f24fb29960.jpg 3fbc8311c8d84095a660180027ef51b9.jpg 767ea3deba254f8b9c54682363dae429.png 54c95c4db5634a339a38464b844c68ee.png'),
+    desc:['Silivri’nin gelişen ve değer kazanan bölgesinde konumlanan projemiz, ruhsat süreci devam eden nitelikli bir villa projesi olarak planlanmıştır. Toplam 3.800 m² inşaat alanına sahip proje, geniş ve fonksiyonel yaşam alanları sunan 8+2 tipinde 9 adet villadan oluşmaktadır.','Modern mimari anlayışıyla tasarlanan villalar, özel yüzme havuzları ile ayrıcalıklı bir yaşam sunmayı hedeflemektedir. Ferah planları, müstakil yaşam konsepti ve Silivri’nin sakin atmosferiyle öne çıkan proje; hem aile yaşamı hem de yatırım açısından güçlü bir alternatif oluşturmaktadır.']},
+  {t:'Er Apartmanı', loc:'Kadıköy · Bostancı', yr:'2024', st:'tamam', img:['df073d5af329440f89d46ffd950c8394','jpg'], ll:[40.9585,29.0960], type:'Kentsel Dönüşüm · Konut', area:'4.500 m²', units:'3+1 Daireler', extra:['Otopark','Kapalı otopark'],
+    gallery:G('df073d5af329440f89d46ffd950c8394.jpg 8ee7978572414fa087498f802f9e1a3b.png 796ab743611249148c0c975dab0aaa32.jpeg eec2176c730b407aa18491a90ded57e9.png 3c36711086a44212a55a94b00b398f76.png db488444ba0c44cf9a197c25938cd419.png 84caf5927e2649038937e38113deb25e.png 7262fe4e831b41a0b09e0df797ef694e.png deef73ff8d0446e4bbe039eb0f3b43f9.png cf170ae0ff424c1197ded9f7c46f0c95.png 6a47c9b9fe034e3da60c73181f50ce7d.png bfff1096600f4292aefa28f76ee4ce08.png d35e791bc379437ca04a36ea570109bd.png bcdd66e6a10d4bd9b7e5723155568701.png'),
+    desc:['2024 yılında hayata geçirilen bu özel kentsel dönüşüm projesi, Kadıköy Bostancı’nın merkezinde çağdaş mimariyle yükseliyor. Toplam 4.500 m² inşaat alanına sahip proje, ferah planlanmış 3+1 daireleri ile konforlu ve fonksiyonel bir yaşam sunuyor.','Kapalı otopark ayrıcalığı, kaliteli malzeme seçimi, modern detaylar ve akıllı yaşam çözümleriyle kentsel dönüşümün sunduğu tüm avantajları bir arada buluşturuyor. Bostancı’nın değerlenen lokasyonunda, geleceğe güvenle bakmak isteyenler için tasarlandı.']},
+  {t:'Kaynak Apartmanı', loc:'Kadıköy · Fener Yolu', yr:'2023', st:'tamam', img:['27a27d57dc6b4ed5b4231d29f731a6e2','jpg'], ll:[40.9765,29.0565], type:'Kentsel Dönüşüm · Konut', area:'4.500 m²', units:'3+1 Daireler', extra:['Otopark','Kapalı otopark'],
+    gallery:G('27a27d57dc6b4ed5b4231d29f731a6e2.jpg 2c2f033aa27d47f3b9db9352734de346.jpeg 13d7de3c56364f2f982318cfacda283e.png 4e0d02c04deb4ff2a3e38aceaaf7a21a.jpeg 4aafc39a32e74c3f95daf50bbe3496b1.jpeg bbc581a22c914a06921f2fb98ae8489b.jpeg ef71a6f5baec4b23be5177f6a269025c.png ee01e9f6a03344a7bccbb74e2116e5f5.png 0fb33117aff34e718aa740f84b161aa3.png 0d78f10bd909407dbd70c417706a460a.png bd28ba3237f94f70a62500d288784c66.jpg 01c325ba900d4cb7b5e04b6f0a61b172.jpg e5bcdd5fbf584b2f9f4e3ae587c63885.jpeg'),
+    desc:['2023 yılında hayata geçirilen bu seçkin kentsel dönüşüm projesi, Kadıköy Fener Yolu’nun prestijli lokasyonunda yükseliyor. Toplam 4.500 m² inşaat alanına sahip proje, ferah ve kullanışlı 3+1 daireleri ile şehir yaşamına konforlu bir yorum katıyor.','Modern mimari anlayışıyla tasarlanan yapı, kapalı otopark imkânı sayesinde hem güvenli hem de ayrıcalıklı bir yaşam sunuyor. Kaliteli detaylar, güçlü yapı sistemi ve fonksiyonel planlamasıyla bugünün ihtiyaçlarına cevap verirken geleceğin yaşam standartlarını da karşılıyor.']},
+  {t:'Kavaklı Villaları', loc:'Silivri · Kavaklı', yr:'2023', st:'tamam', img:['7363b9e9dee245a1a419e95277cb1a1b','jpg'], ll:[41.0715,28.2690], type:'Villa', area:'2.500 m²', units:'4 Villa · 6+1', extra:['Özellik','Özel yüzme havuzu'],
+    gallery:G('7363b9e9dee245a1a419e95277cb1a1b.jpg 4209d205e65d43d9b4b787e8556e4b53.jpg 2ec03368b1694e83a1918fbea1a02165.jpg e5470a38508d4d80b8c3a6622f781a74.jpg a2cc92c56e63436781f023001e0a95b7.jpg 799a34b6aae34053bd8dc608878f4f2a.jpg dba08124cf04492a810fc4309b2dd816.jpg a219239f951e44009d85a469ddf4c352.jpg 999f4e9c8f3d484694cc8829f554e7f3.jpg 0adf47d8ab7f43108ad201d8752baf0c.jpg 18e60b8b0a0543d1b795389d29431118.jpg 0641d050f162434c865244b6032175cc.jpg b4d98169156848628ce24580064a08f4.jpg 0dc37b46774f43fc82bbeaa22e966ac4.jpg d7722f5cb26b4a48a3569f084a114504.jpg 949f29381c5e48caade2f0ed33bd2cb9.jpg 9290cf430671416390992a30462d5e25.jpg 8ee246659d7843eeb7d136d7e9b4159a.jpg 1a62ab10038349fd8c222deabf5dbf64.jpg 20f315e707a647fc9f179083ed42cde3.jpg 1af4e842bcd4482cbfa996b08d9132f6.jpg 4e79187d9477469e916138706834b1fd.jpg ad0c1aeeb5d4446081a7d672c5f7e984.jpg f2acb9dc5d224ef9b3ebc75003bc41a6.jpg 47b0d571ff6d4b4e979ef38745a370c6.jpg'),
+    desc:['2023 yılında Silivri Kavaklı’da hayata geçirilen bu özel proje, şehirden uzak ama konfordan ödün vermeyen bir yaşam anlayışı sunuyor. Toplam 2.500 m² inşaat alanı üzerine kurulu projede, geniş ve ferah planlanmış 6+1 tipinde 4 adet özel villa yer alıyor.','Modern mimariyle tasarlanan villalar, özel yüzme havuzu ile dört mevsim tatil konforunu evinize taşıyor. Geniş yaşam alanları, yüksek konfor standartları ve mahremiyet odaklı tasarımıyla sakin ve seçkin bir yaşam arayanlar için kusursuz bir alternatif.']},
+  {t:'Şen Apartmanı', loc:'Kadıköy · Fener Yolu', yr:'2021', st:'tamam', img:['6b951f5404f14838b3681e5a516d13b8','jpg'], ll:[40.9785,29.0590], type:'Kentsel Dönüşüm · Konut', area:'3.200 m²', units:'3+1 Daireler', extra:['Otopark','Kapalı otopark'],
+    gallery:G('6b951f5404f14838b3681e5a516d13b8.jpg 40ecdf19d6c84ecc81b43bb33a472eca.jpeg 38e5cb8649be44b78d558178603b7441.png 81b4b855e6544ecc8238cbf2174ab980.png 506e80daaa5745ea8284551adff3e1f6.png'),
+    desc:['2021 yılında tamamlanan bu nitelikli kentsel dönüşüm projesi, Kadıköy Fener Yolu’nun seçkin dokusunda modern yaşam anlayışıyla yükseliyor. Toplam 3.200 m² inşaat alanına sahip proje, ferah planlanmış 3+1 daireleri ile konforu ve işlevselliği bir araya getiriyor.','Güncel mimari çizgilerle tasarlanan yapı, kapalı otopark imkânı sayesinde şehir yaşamında önemli bir ayrıcalık sunuyor. Sağlam yapı sistemi, kaliteli malzeme kullanımı ve merkezi konum avantajıyla hem bugünün hem de geleceğin yaşam beklentilerine cevap veriyor.']},
+  {t:'Altun Apartmanı', loc:'Güngören', yr:'2020', st:'tamam', img:['350341e6b6f441ccb3f3009e225de72d','jpg'], ll:[41.0225,28.8735], type:'Konut', units:'2+1 ve 3+1 Daireler',
+    gallery:G('350341e6b6f441ccb3f3009e225de72d.jpg 220884e8afb24e54922d1bd2889d595b.jpg 7387a132eca849c2abc597d5a7734a5e.jpg a29be2c2fdff4f13a3d761e38b6b0dca.jpg 7ddcb46a6c84452687466ffc165b91da.jpg'),
+    desc:['Güngören’de hayata geçirilen bu konut projesi, modern mimari anlayışıyla tasarlanarak bölgenin yükselen değerine güçlü bir katkı sunuyor. Fonksiyonel planlamaya sahip 2+1 ve 3+1 daire seçenekleri, hem oturum hem de yatırım için ideal çözümler üretiyor.','Lokasyon avantajı ve güçlü yapı kalitesi sayesinde uzun vadede değerini koruyan ve kazandıran bir proje. Güngören’in gelişen yapısında, modern yaşam ile kârlı yatırımın buluştuğu seçkin bir adres.']},
+  {t:'Altun Evler', loc:'Göztepe', yr:'2016', st:'tamam', img:['5064d3c5675c4d94b204627be4cd989c','jpg'], ll:[40.9775,29.0610], type:'Konut', area:'12.500 m²', units:'2+1 ve 3+1 Daireler', extra:['Özellik','24 saat güvenlik · Kapalı otopark'],
+    gallery:G('5064d3c5675c4d94b204627be4cd989c.jpg 65eb1ae4ddab486e97c12f3bb09cfeb7.jpg 9aa5c8f0cfa2431a84c97e2e65466c5c.jpg 27876156e91343648eaf13ea23244708.jpg c969ae3148264d0cb52e76bccb87eb13.jpg 56df5a36ab594663b5024f4969bf9b35.jpg ff816c781a974e55a58df61f815a6b3c.jpg 3c4cca0ceb3f4ea39d35b55020e4564b.jpg 49f5551fb6db42c088bb6b682a30b039.jpg 8638044a88bf4d1c99f846596fc3ec06.jpg d8c22d7ac2c5421a9ffaa82ba6c7b82a.jpg 80b32d68179641b7a4d5f25675bc1d7e.jpg 2212685f44fc4a31836a0636d14b9f58.jpg 4369a275722742d1a69a51f96caec3fb.jpg 6c321d25281248b2bcff04cb31fe9ff8.png b4abd941abc143cfa83e7b2d991fec26.jpg ff948eb7d1e84b59aaef31f3c467dc2b.jpg 49b596bfde18454e924e89c2e28b5a0a.jpg'),
+    desc:['2016 yılında Göztepe’de hayata geçirilen bu konut projesi, bölgenin değerini yükselten ölçeği ve donatılarıyla öne çıkıyor. Toplam 12.500 m² inşaat alanı üzerine kurulu proje, dengeli planlanmış 2+1 ve 3+1 daire seçenekleri ile geniş bir kullanıcı profiline hitap ediyor.','Sosyal alanlar günlük yaşamı zenginleştirirken, 24 saat güvenlik ve kapalı otopark imkânı konforu üst seviyeye taşıyor. Göztepe’nin köklü dokusunda, modern yaşamla sürdürülebilirliği bir araya getiren seçkin bir proje.']},
+  {t:'Özöztürkler Sitesi', loc:'Başakşehir · Onurkent', yr:'2007', st:'tamam', img:['38e5cb8649be44b78d558178603b7441','png'], ll:[41.0935,28.8020], type:'Konut', extra:['Özellik','Açık otopark · Geniş yeşil alan'],
+    gallery:G('38e5cb8649be44b78d558178603b7441.png 40ecdf19d6c84ecc81b43bb33a472eca.jpeg'),
+    desc:['2007 yılında tamamlanan, güncel mimari çizgilerle tasarlanan yapı; açık otopark ve geniş yeşil alan imkânı sayesinde şehir yaşamında önemli bir ayrıcalık sunuyor.','Sağlam yapı sistemi, kaliteli malzeme kullanımı ve merkezi konum avantajıyla Başakşehir’in değerli bölgelerinden Onurkent’te güvenli ve modern bir yaşam için tasarlandı.']},
+  {t:'Esenler', loc:'Güngören', yr:'2004 – 2014', st:'tamam', img:['5439bf6e460048f6a73c6255a27ecb8c','jpg'], ll:[41.0175,28.8810], type:'Konut Projeleri',
+    gallery:G('5439bf6e460048f6a73c6255a27ecb8c.jpg ee300549ad6c49eca276c09a0ca9f9c0.jpg'),
+    desc:['2004–2014 yılları arasında hayata geçirilen konut projelerimiz, dönemin mimari anlayışı ile tasarlanmış, güvenli ve sürdürülebilir yapılar olarak tamamlanmıştır.','Farklı lokasyonlarda geliştirilen ve fonksiyonel daire planlarıyla öne çıkan bu projeler, hem oturum hem de yatırım açısından değerini koruyan yapılar olarak portföyümüzde önemli bir yer tutmaktadır.']},
 ];
 const partners = ['0bf132c6d478434db241b692967e25ff','53ea03099eaf4edb8c4afb1188fc5c95','1706fb5dc0c24c3e93e15edadbd0faf6','cb8104307b3c46cab9737fa6e471a325','c2cb39cecb1342fcb9e1395af3d8a9e6','7141d87456544b56abfe82b6565f9726','9313ac6628bc45e78b52980ccc1c2cd7','e01b3e5e7b674e288c4cdc6402bba9f7','e965d69dcae147ab885bfd70a121af32','2c1918c3c94f4ce6934582078104f0d2','ec71c9a2badb4b959d139f2afb3210f2','ffa4b768ea7142be9912a342b3dc0175','32c3c83bd10644efbb597d87a9b0ce0c','183b78beea5b4dca8dc9d5394274eb52','26b5915d076245d7acc60bbea4eb35eb','374a85c2722d41228308ac62c209297a','d4e497a16eef443d831734cbbd56216d','bd45af7109444ad0848c8c0e50a6dc80','fe365f35b2b54817a2e5d798e584663a','59b7a385ddbb4e4f9cb1e5b48ddf2a1e'];
 
@@ -709,16 +748,18 @@ tabs.addEventListener('click', e => {
 
 /* modal */
 const modal = document.getElementById('modal'), mImg = document.getElementById('mImg'), mThumbs = document.getElementById('mThumbs');
+let gal = [], gi = 0, gTitle = '';
 function openP(i){
   const p = projects[i];
   document.getElementById('mEyebrow').textContent = p.st==='devam' ? 'Devam Eden Proje' : 'Tamamlanan Proje';
   document.getElementById('mTitle').innerHTML = `${p.t}<br><em class="it gold">${p.t===p.loc?p.yr:p.loc}</em>`;
-  const specs = [['Konum',p.loc],['Yıl',p.yr],['Tür',p.type]]; if(p.area) specs.push(['İnşaat Alanı',p.area]); if(p.units) specs.push(['Daire Tipi',p.units]);
+  const specs = [['Konum',p.loc],['Yıl',p.yr],['Tür',p.type]]; if(p.area) specs.push(['İnşaat Alanı',p.area]); if(p.units) specs.push([/villa|blok/i.test(p.units)?'Birimler':'Daire Tipi',p.units]); if(p.extra) specs.push(p.extra);
   document.getElementById('mSpecs').innerHTML = specs.map(s=>`<div><small>${s[0]}</small><b>${s[1]}</b></div>`).join('');
   document.getElementById('mDesc').innerHTML = (p.desc||[`${p.loc} bölgesindeki bu projemiz, Altun Plus’ın kalite standartları ve mühendislik uzmanlığıyla hayata geçirildi. Detaylı bilgi için bizimle iletişime geçin.`]).map(t=>`<p>${t}</p>`).join('');
-  const gal = p.gallery || [p.img];
-  mImg.src = RAW(gal[0][0],gal[0][1]);
-  mThumbs.innerHTML = gal.length>1 ? gal.map((g,k)=>`<button class="${k?'':'on'}" data-src="${RAW(g[0],g[1])}"><img src="${W(g[0],g[1],160,120)}" alt=""></button>`).join('') : '';
+  gal = p.gallery || [p.img]; gTitle = p.t;
+  document.getElementById('mMedia').classList.toggle('single', gal.length < 2);
+  mThumbs.innerHTML = gal.map((g,k)=>`<button data-k="${k}" aria-label="Görsel ${k+1}"><img loading="lazy" src="${W(g[0],g[1],160,116)}" alt=""></button>`).join('');
+  show(0, true);
   modal.classList.add('open'); lenis && lenis.stop(); document.body.style.overflow='hidden';
   if (window.gsap) gsap.fromTo('#modal .modal__body > *', {y:40, opacity:0}, {y:0, opacity:1, stagger:.06, duration:1, delay:.35, ease:'expo.out'});
 }
@@ -727,7 +768,25 @@ grid.addEventListener('click', e => { const c = e.target.closest('.pj'); if(c) o
 grid.addEventListener('keydown', e => { if(e.key==='Enter'){ const c = e.target.closest('.pj'); if(c) openP(+c.dataset.i);} });
 document.getElementById('mClose').onclick = closeP;
 addEventListener('keydown', e => { if(e.key==='Escape') closeP(); });
-mThumbs.addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; mThumbs.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); mImg.src = b.dataset.src; });
+const BIG = (g) => `https://static.wixstatic.com/media/565e20_${g[0]}~mv2.${g[1]}/v1/fit/w_2000,h_1500,al_c,q_85/a.${g[1]}`;
+function show(k, instant){
+  gi = (k + gal.length) % gal.length; const g = gal[gi], src = BIG(g);
+  document.getElementById('mCount').textContent = `${String(gi+1).padStart(2,'0')} / ${String(gal.length).padStart(2,'0')}`;
+  mThumbs.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('on', j===gi));
+  const on = mThumbs.children[gi]; if(on) mThumbs.scrollTo({left: on.offsetLeft - mThumbs.clientWidth/2 + on.offsetWidth/2, behavior: instant?'auto':'smooth'});
+  mImg.alt = `${gTitle} — görsel ${gi+1}`;
+  const swap = () => { mImg.src = src; document.getElementById('mBg').src = W(g[0],g[1],400,300); };
+  if (instant) { swap(); return; }
+  mImg.classList.add('fade'); const pre = new Image(); pre.onload = pre.onerror = () => { swap(); requestAnimationFrame(()=>mImg.classList.remove('fade')); }; pre.src = src;
+  const n = gal[(gi+1)%gal.length]; new Image().src = BIG(n);
+}
+mThumbs.addEventListener('click', e => { const b = e.target.closest('button'); if(b) show(+b.dataset.k); });
+document.getElementById('mPrev').onclick = () => show(gi-1);
+document.getElementById('mNext').onclick = () => show(gi+1);
+addEventListener('keydown', e => { if(!modal.classList.contains('open') || gal.length<2) return; if(e.key==='ArrowRight') show(gi+1); if(e.key==='ArrowLeft') show(gi-1); });
+let tx0 = null; const stage = document.getElementById('mStage');
+stage.addEventListener('touchstart', e => { tx0 = e.touches[0].clientX; }, {passive:true});
+stage.addEventListener('touchend', e => { if(tx0===null) return; const dx = e.changedTouches[0].clientX - tx0; if(Math.abs(dx)>40) show(gi + (dx<0?1:-1)); tx0 = null; });
 
 /* partners marquee */
 const half = Math.ceil(partners.length/2);
